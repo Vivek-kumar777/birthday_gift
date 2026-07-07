@@ -87,13 +87,18 @@
         var foot = tree.footer;
         var hold = 1;
 
+        function getCanvasPoint(pageX, pageY) {
+            var rect = canvas[0].getBoundingClientRect();
+            var x = (pageX - (rect.left + window.pageXOffset)) * (canvas[0].width / rect.width);
+            var y = (pageY - (rect.top + window.pageYOffset)) * (canvas[0].height / rect.height);
+            return { x: x, y: y };
+        }
+
         function handlePointer(pageX, pageY) {
-            var offset = canvas.offset();
-            var x = pageX - offset.left;
-            var y = pageY - offset.top;
-            if (seed.hover(x, y)) {
+            var point = getCanvasPoint(pageX, pageY);
+            if (seed.hover(point.x, point.y)) {
                 hold = 0;
-                canvas.off("click touchstart mousemove");
+                canvas.off("click touchstart mousemove touchmove");
                 canvas.removeClass('hand');
             }
         }
@@ -102,11 +107,11 @@
             e.preventDefault();
             var ev = e.type === "touchstart" ? e.originalEvent.touches[0] : e;
             handlePointer(ev.pageX, ev.pageY);
-        }).mousemove(function(e) {
-            var offset = canvas.offset(), x, y;
-            x = e.pageX - offset.left;
-            y = e.pageY - offset.top;
-            canvas.toggleClass('hand', seed.hover(x, y));
+        }).on("mousemove touchmove", function(e) {
+            e.preventDefault();
+            var ev = e.type === "touchmove" ? e.originalEvent.touches[0] : e;
+            var point = getCanvasPoint(ev.pageX, ev.pageY);
+            canvas.toggleClass('hand', seed.hover(point.x, point.y));
         });
 
         var seedAnimate = eval(Jscex.compile("async", function () {
