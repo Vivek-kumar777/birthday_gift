@@ -69,6 +69,7 @@ a {
   display: block;
   will-change: contents;
   background: #c9737a;
+  touch-action: manipulation;
 }
 
 @media (max-width: 1000px) {
