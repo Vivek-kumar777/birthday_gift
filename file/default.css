@@ -399,3 +399,10 @@ a { color: var(--white); font-size: 14px; }
   .hero-card { padding: 18px; }
   .hero-content h1 { font-size: 2.2rem; }
 }
+@media (max-width: 768px) {
+  body::after { animation: none; opacity: 0.14; }
+  body::before { opacity: 0.22; }
+  #wishText { animation: none; }
+  .hero-card, #text, #musicBtn, #wishModal, #wishBox { will-change: auto; }
+  .fheart, .confetti-piece, .balloon { will-change: transform, opacity; }
+}
