@@ -68,7 +68,7 @@
 
     <!-- Music toggle -->
     <button id="musicBtn" title="Toggle music" aria-label="Toggle music">♪</button>
-    <audio id="bgMusic" loop src="./nastelbom-happy-birthday-471481.mp3"></audio>
+    <audio id="bgMusic" loop preload="auto" playsinline webkit-playsinline src="./nastelbom-happy-birthday-471481.mp3"></audio>
 
     <script>
     (function() {
@@ -82,8 +82,8 @@
         var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
         var width = 1100;
         var height = 680;
-        var frameDelay = isMobile ? 24 : 10;
-        var flowerBatch = isMobile ? 2 : 5;
+        var frameDelay = isMobile ? 30 : 10;
+        var flowerBatch = isMobile ? 1 : 5;
         canvas.attr("width", width);
         canvas.attr("height", height);
         canvas.css({ width: "100%", height: "auto", background: "#c9737a" });
@@ -115,7 +115,7 @@
                     ]]
                 ]]
             ],
-            bloom: { num: isMobile ? 220 : 400, width: width, height: height },
+            bloom: { num: isMobile ? 120 : 400, width: width, height: height },
             footer: { width: width + 100, height: 5, speed: isMobile ? 12 : 10 }
         };
 
@@ -137,8 +137,14 @@
         function playMusicOnInteraction() {
             if (!bgMusic) return;
             if (bgMusic.paused) {
+                bgMusic.muted = false;
                 bgMusic.volume = 0.75;
-                bgMusic.play().catch(function() {});
+                var playPromise = bgMusic.play();
+                if (playPromise && playPromise.catch) {
+                    playPromise.catch(function(err) {
+                        console.warn('Audio play failed:', err);
+                    });
+                }
                 if (musicBtn) {
                     musicBtn.classList.add('playing');
                     musicBtn.textContent = '♫';
@@ -212,13 +218,15 @@
         var textAnimate = eval(Jscex.compile("async", function () {
             var lines = $("#code").show().find(".say");
             var texts = [];
+            var typeSpeed = isMobile ? 70 : 45;
+            var linePause = isMobile ? 260 : 180;
             lines.each(function() { texts.push($(this).text()); $(this).text(''); });
             function typeLine(el, text, cb) {
                 var i = 0;
                 var t = setInterval(function() {
                     el.text(text.slice(0, ++i));
                     if (i === text.length) { clearInterval(t); cb(); }
-                }, 45);
+                }, typeSpeed);
             }
             function runNext(idx) {
                 if (idx >= lines.length) {
@@ -226,7 +234,7 @@
                     return;
                 }
                 typeLine($(lines[idx]), texts[idx], function() {
-                    setTimeout(function() { runNext(idx + 1); }, 180);
+                    setTimeout(function() { runNext(idx + 1); }, linePause);
                 });
             }
             runNext(0);
