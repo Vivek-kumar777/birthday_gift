@@ -193,9 +193,10 @@
         draw: function() {
             var ctx = this.tree.ctx, point = this.point;
             var len = this.length / 2;
+            var bgColor = (this.tree.opt.footer && this.tree.opt.footer.color) || '#c9737a';
 
             ctx.save();
-            ctx.strokeStyle = '#FFF';
+            ctx.strokeStyle = bgColor;
             ctx.lineWidth = this.height;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
