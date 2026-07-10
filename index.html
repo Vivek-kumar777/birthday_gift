@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBD love</title>	    
+    <title>HBD love</title>
     <link type="text/css" rel="stylesheet" href="./file/default.css">
     <script type="text/javascript" src="./file/jquery.min.js"></script>
     <script type="text/javascript" src="./file/jscex.min.js"></script>
@@ -12,25 +12,68 @@
     <script type="text/javascript" src="./file/jscex-builderbase.min.js"></script>
     <script type="text/javascript" src="./file/jscex-async.min.js"></script>
     <script type="text/javascript" src="./file/jscex-async-powerpack.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script type="text/javascript" src="./file/functions.js" charset="utf-8"></script>
     <script type="text/javascript" src="./file/love.js" charset="utf-8"></script>
 </head>
 <body>
+    <!-- Floating hearts background -->
+    <div id="hearts-container" aria-hidden="true"></div>
+
     <div id="main">
         <div id="error"><a href="http://www.google.cn/chrome/intl/zh-CN/landing_chrome.html?hl=zh-CN&brand=CHMI">Chrome</a> (<a href="http://firefox.com.cn/download/">Firefox</a>)</div>
 
         <div id="wrap">
-            <div id="text">
-                <div id="code"><span class="say">Happy Birthday to you 🎂✨</span><br><span class="say">You make every day brighter 🌸</span><br><span class="say">Wishing you endless happiness 💕</span><br><span class="say">You deserve all the good things 🌟</span><br><span class="say">Stay blessed and beautiful 🌺</span><br><span class="say">Hope this day is as special as you are 🎈💖</span></div>
-            </div>
-            <canvas id="canvas" width="1100" height="680"></canvas>
+            <section id="hero" class="hero-section">
+                <div class="hero-card">
+                    <div class="hero-content">
+                        <h1 id="mainGreeting">Happy Birthday! 🎂</h1>
+                    </div>
+                </div>
+            </section>
+            <main id="mainArea">
+                <aside id="text">
+                    <div id="code" style="display: none;">
+                        <span class="say">Happy Birthday to you 🎂✨</span>
+                        <span class="say">You make every day brighter 🌸</span>
+                        <span class="say">Wishing you endless happiness 💕</span>
+                        <span class="say">You deserve all the good things 🌟</span>
+                        <span class="say">Stay blessed and beautiful 🌺</span>
+                        <span class="say">Hope this day is as special as you are 🎈💖</span>
+                    </div>
+                </aside>
+                <div class="canvas-wrapper">
+                    <div id="canvasFrame">
+                        <canvas id="canvas" width="1100" height="680"></canvas>
+                        <div id="confetti-container" aria-hidden="true"></div>
+                        <div id="balloon-container" aria-hidden="true"></div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
+
+    <!-- Wish modal -->
+    <div id="wishModal" aria-hidden="true">
+        <div id="wishBox">
+            <div id="wishClose">✕</div>
+            <div id="wishText">
+                💖 Happy Birthday, Birthday Girl! 💖<br><br>
+                May your day be filled with love, laughter,<br>
+                and all the magic you deserve. 🌸✨<br><br>
+                You are truly one in a million. 🎀
+            </div>
+        </div>
+    </div>
+
+    <!-- Music toggle -->
+    <button id="musicBtn" title="Toggle music" aria-label="Toggle music">♪</button>
+    <audio id="bgMusic" loop src="./nastelbom-happy-birthday-471481.mp3"></audio>
 
     <script>
     (function() {
         var canvas = $('#canvas');
-		
+
         if (!canvas[0].getContext) {
             $("#error").show();
             return false;
@@ -40,11 +83,7 @@
         var height = 680;
         canvas.attr("width", width);
         canvas.attr("height", height);
-        canvas.css({
-            width: "100%",
-            height: "auto",
-            background: "#c9737a"
-        });
+        canvas.css({ width: "100%", height: "auto", background: "#c9737a" });
 
         var opts = {
             seed: {
@@ -68,19 +107,11 @@
                     [546, 357, 608, 252, 678, 221, 6, 100, [
                         [590, 293, 646, 277, 648, 271, 2, 80]
                     ]]
-                ]] 
+                ]]
             ],
-            bloom: {
-                num: 700,
-                width: 1080,
-                height: 650,
-            },
-            footer: {
-                width: 1200,
-                height: 5,
-                speed: 10,
-            }
-        }
+            bloom: { num: 400, width: 1080, height: 650 },
+            footer: { width: 1200, height: 5, speed: 10 }
+        };
 
         var tree = new Tree(canvas[0], width, height, opts);
         var seed = tree.seed;
@@ -94,21 +125,35 @@
             return { x: x, y: y };
         }
 
+        function fireConfetti() {
+            var rect = canvas[0].getBoundingClientRect();
+            var cx = (rect.left + rect.right) / 2 / window.innerWidth;
+            var cy = (rect.top + rect.bottom) / 2 / window.innerHeight;
+            confetti({ particleCount: 120, spread: 80, origin: { x: cx, y: cy },
+                colors: ['#ff8fbf','#ffd700','#ffb8c5','#fff','#f2b7ff','#a0d8ff'] });
+        }
+
         function handlePointer(pageX, pageY) {
             var point = getCanvasPoint(pageX, pageY);
             if (seed.hover(point.x, point.y)) {
                 hold = 0;
                 canvas.off("click touchstart mousemove touchmove");
                 canvas.removeClass('hand');
+                fireConfetti();
             }
         }
 
+        // Throttle mousemove hover check — getImageData is expensive (GPU→CPU readback)
+        var lastHoverCheck = 0;
         canvas.on("click touchstart", function(e) {
             e.preventDefault();
             var ev = e.type === "touchstart" ? e.originalEvent.touches[0] : e;
             handlePointer(ev.pageX, ev.pageY);
         }).on("mousemove touchmove", function(e) {
             e.preventDefault();
+            var now = Date.now();
+            if (now - lastHoverCheck < 40) return;
+            lastHoverCheck = now;
             var ev = e.type === "touchmove" ? e.originalEvent.touches[0] : e;
             var point = getCanvasPoint(ev.pageX, ev.pageY);
             canvas.toggleClass('hand', seed.hover(point.x, point.y));
@@ -116,57 +161,57 @@
 
         var seedAnimate = eval(Jscex.compile("async", function () {
             seed.draw();
-            while (hold) {
-                $await(Jscex.Async.sleep(10));
-            }
-            while (seed.canScale()) {
-                seed.scale(0.95);
-                $await(Jscex.Async.sleep(10));
-            }
-            while (seed.canMove()) {
-                seed.move(0, 2);
-                foot.draw();
-                $await(Jscex.Async.sleep(10));
-            }
+            while (hold) { $await(Jscex.Async.sleep(10)); }
+            while (seed.canScale()) { seed.scale(0.95); $await(Jscex.Async.sleep(10)); }
+            while (seed.canMove()) { seed.move(0, 2); foot.draw(); $await(Jscex.Async.sleep(10)); }
         }));
 
         var growAnimate = eval(Jscex.compile("async", function () {
-            do {
-                tree.grow();
-                $await(Jscex.Async.sleep(10));
-            } while (tree.canGrow());
+            do { tree.grow(); $await(Jscex.Async.sleep(10)); } while (tree.canGrow());
         }));
 
         var flowAnimate = eval(Jscex.compile("async", function () {
-            do {
-                tree.flower(2);
-                $await(Jscex.Async.sleep(10));
-            } while (tree.canFlower());
+            do { tree.flower(5); $await(Jscex.Async.sleep(16)); } while (tree.canFlower());
         }));
 
         var moveAnimate = eval(Jscex.compile("async", function () {
             tree.snapshot("p1", 240, 0, 610, 680);
-            while (tree.move("p1", 500, 0)) {
-                foot.draw();
-                $await(Jscex.Async.sleep(10));
-            }
+            while (tree.move("p1", 500, 0)) { foot.draw(); $await(Jscex.Async.sleep(10)); }
             foot.draw();
             tree.snapshot("p2", 500, 0, 610, 680);
-
             canvas.parent().css("background", "#c9737a");
             canvas.css("background", "#c9737a");
         }));
 
         var textAnimate = eval(Jscex.compile("async", function () {
-            $("#code").show().typewriter();
+            var lines = $("#code").show().find(".say");
+            var texts = [];
+            lines.each(function() { texts.push($(this).text()); $(this).text(''); });
+            function typeLine(el, text, cb) {
+                var i = 0;
+                var t = setInterval(function() {
+                    el.text(text.slice(0, ++i));
+                    if (i === text.length) { clearInterval(t); cb(); }
+                }, 45);
+            }
+            function runNext(idx) {
+                if (idx >= lines.length) {
+                    setTimeout(function() { $('#wishModal').addClass('show'); }, 600);
+                    return;
+                }
+                typeLine($(lines[idx]), texts[idx], function() {
+                    setTimeout(function() { runNext(idx + 1); }, 180);
+                });
+            }
+            runNext(0);
         }));
-	    
+
         var runAsync = eval(Jscex.compile("async", function () {
             $await(seedAnimate());
             $await(growAnimate());
             $await(flowAnimate());
-            $await(moveAnimate());
             textAnimate().start();
+            $await(moveAnimate());
         }));
 
         runAsync().start();
