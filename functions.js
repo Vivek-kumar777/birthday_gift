@@ -14,7 +14,9 @@ $(function() {
 
     /* ── Confetti pieces (canvas overlay) ── */
     function createConfetti(count) {
-        count = isMobile ? Math.max(8, Math.min(count, 24)) : count;
+        if (isMobile) {
+            count = Math.max(6, Math.min(count, 16));
+        }
         for (var i = 0; i < count; i++) {
             var piece = $('<span class="confetti-piece"></span>');
             var size  = randomRange(6, 10);
@@ -25,19 +27,20 @@ $(function() {
                 height:          (size + 4) + 'px',
                 backgroundColor: ['#ffe07d','#ff8fbf','#ffb8c5','#ffe6a4','#c5ffea'][randomRange(0, 4)],
                 transform:       'rotate(' + randomRange(0, 360) + 'deg)',
-                opacity:         isMobile ? 0.85 : 0.95
+                opacity:         isMobile ? 0.78 : 0.95
             });
             $confettiContainer.append(piece);
-            (function(el) { setTimeout(function() { el.remove(); }, isMobile ? 1800 : 2200); })(piece);
+            (function(el) { setTimeout(function() { el.remove(); }, isMobile ? 1500 : 2200); })(piece);
         }
     }
 
     /* ── Balloons ── */
     function createBalloons(count) {
-        count = isMobile ? Math.min(count, 4) : count;
+        if (isMobile) return;
+        count = Math.min(count, 6);
         for (var i = 0; i < count; i++) {
             var balloon  = $('<span class="balloon"></span>');
-            var duration = randomRange(isMobile ? 4200 : 5000, isMobile ? 6200 : 7500);
+            var duration = randomRange(5000, 7500);
             balloon.css({
                 left:              randomRange(10, 85) + '%',
                 animationDuration: duration + 'ms',
@@ -58,8 +61,9 @@ $(function() {
     /* ── Floating background hearts ── */
     var HEARTS = ['💖','💕','💗','💓','🌸','✨','💝'];
     function spawnHeart() {
+        if (isMobile && Math.random() > 0.6) return;
         var el = $('<span class="fheart"></span>');
-        var duration = randomRange(isMobile ? 9 : 7, isMobile ? 16 : 14);
+        var duration = randomRange(isMobile ? 10 : 7, isMobile ? 18 : 14);
         el.text(HEARTS[randomRange(0, HEARTS.length - 1)]);
         el.css({
             left:              randomRange(2, 96) + '%',
@@ -70,11 +74,11 @@ $(function() {
         $heartsContainer.append(el);
         setTimeout(function() { el.remove(); }, duration * 1000 + 200);
     }
-    // Spawn one heart every 2400ms on mobile to reduce DOM churn
-    setInterval(spawnHeart, isMobile ? 2400 : 1800);
-    // Seed only 2 immediately on mobile
-    for (var h = 0; h < (isMobile ? 2 : 3); h++) {
-        setTimeout(spawnHeart, h * 700);
+    // Spawn one heart every 3200ms on mobile, 1800ms on desktop
+    setInterval(spawnHeart, isMobile ? 3200 : 1800);
+    // Seed only 1 immediately on mobile
+    for (var h = 0; h < (isMobile ? 1 : 3); h++) {
+        setTimeout(spawnHeart, h * 800);
     }
 
     /* ── Music toggle with volume fade ── */
@@ -111,7 +115,7 @@ $(function() {
 
     /* ── Canvas click: confetti + balloons ── */
     $('#canvas').on('click', function() {
-        createConfetti(20);
+        createConfetti(isMobile ? 12 : 20);
         createBalloons(6);
     });
 
@@ -121,5 +125,5 @@ $(function() {
     });
 
     /* ── Initial confetti burst on load ── */
-    createConfetti(18);
+    createConfetti(isMobile ? 10 : 18);
 });
