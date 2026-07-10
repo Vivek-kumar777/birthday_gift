@@ -45,6 +45,8 @@
                 <div class="canvas-wrapper">
                     <div id="canvasFrame">
                         <canvas id="canvas" width="1100" height="680"></canvas>
+                        <div id="typewriterText"></div>
+                        <button id="openSurpriseBtn" class="open-surprise-btn">Open Surprise</button>
                         <div id="confetti-container" aria-hidden="true"></div>
                         <div id="balloon-container" aria-hidden="true"></div>
                     </div>
@@ -133,6 +135,7 @@
 
         var bgMusic = document.getElementById('bgMusic');
         var musicBtn = document.getElementById('musicBtn');
+        var sideMessageStarted = false;
 
         var audioStarted = false;
 
@@ -190,6 +193,12 @@
             handlePointer(ev.pageX, ev.pageY);
         });
 
+        $('#openSurpriseBtn').on('click', function() {
+            playMusicOnInteraction();
+            startSideMessage();
+            $(this).fadeOut(250);
+        });
+
         if (!isMobile) {
             canvas.on("mousemove touchmove", function(e) {
                 e.preventDefault();
@@ -226,6 +235,10 @@
             canvas.css("background", "#c9737a");
         }));
 
+        function showOpenSurpriseButton() {
+            $('#openSurpriseBtn').fadeIn(500);
+        }
+
         var textAnimate = eval(Jscex.compile("async", function () {
             var lines = $("#code").show().find(".say");
             var texts = [];
@@ -251,10 +264,29 @@
             runNext(0);
         }));
 
+        function typeSideMessage(text, target, speed) {
+            var el = $(target);
+            el.text('');
+            var idx = 0;
+            var timer = setInterval(function() {
+                el.text(text.slice(0, ++idx));
+                if (idx >= text.length) {
+                    clearInterval(timer);
+                }
+            }, speed);
+        }
+
+        function startSideMessage() {
+            if (sideMessageStarted) return;
+            sideMessageStarted = true;
+            typeSideMessage("You are the person I like sooooo much 💖✨. doesn't matter we fight sometimes, you are still my favorite forever 🌸💕.", "#typewriterText", isMobile ? 90 : 40);
+        }
+
         var runAsync = eval(Jscex.compile("async", function () {
             $await(seedAnimate());
             $await(growAnimate());
             $await(flowAnimate());
+            showOpenSurpriseButton();
             textAnimate().start();
             $await(moveAnimate());
         }));
