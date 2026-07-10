@@ -15,7 +15,7 @@ $(function() {
     /* ── Confetti pieces (canvas overlay) ── */
     function createConfetti(count) {
         if (isMobile) {
-            count = Math.max(6, Math.min(count, 16));
+            count = Math.max(4, Math.min(count, 10));
         }
         for (var i = 0; i < count; i++) {
             var piece = $('<span class="confetti-piece"></span>');
@@ -27,7 +27,7 @@ $(function() {
                 height:          (size + 4) + 'px',
                 backgroundColor: ['#ffe07d','#ff8fbf','#ffb8c5','#ffe6a4','#c5ffea'][randomRange(0, 4)],
                 transform:       'rotate(' + randomRange(0, 360) + 'deg)',
-                opacity:         isMobile ? 0.78 : 0.95
+                opacity:         isMobile ? 0.75 : 0.95
             });
             $confettiContainer.append(piece);
             (function(el) { setTimeout(function() { el.remove(); }, isMobile ? 1500 : 2200); })(piece);
@@ -61,9 +61,9 @@ $(function() {
     /* ── Floating background hearts ── */
     var HEARTS = ['💖','💕','💗','💓','🌸','✨','💝'];
     function spawnHeart() {
-        if (isMobile && Math.random() > 0.6) return;
+        if (isMobile && ($('.fheart').length >= 4 || Math.random() > 0.72)) return;
         var el = $('<span class="fheart"></span>');
-        var duration = randomRange(isMobile ? 10 : 7, isMobile ? 18 : 14);
+        var duration = randomRange(isMobile ? 12 : 7, isMobile ? 20 : 14);
         el.text(HEARTS[randomRange(0, HEARTS.length - 1)]);
         el.css({
             left:              randomRange(2, 96) + '%',
@@ -74,11 +74,11 @@ $(function() {
         $heartsContainer.append(el);
         setTimeout(function() { el.remove(); }, duration * 1000 + 200);
     }
-    // Spawn one heart every 3200ms on mobile, 1800ms on desktop
-    setInterval(spawnHeart, isMobile ? 3200 : 1800);
+    // Spawn one heart every 4200ms on mobile, 2200ms on desktop
+    setInterval(spawnHeart, isMobile ? 4200 : 2200);
     // Seed only 1 immediately on mobile
     for (var h = 0; h < (isMobile ? 1 : 3); h++) {
-        setTimeout(spawnHeart, h * 800);
+        setTimeout(spawnHeart, h * 1000);
     }
 
     /* ── Music toggle with volume fade ── */
@@ -115,7 +115,7 @@ $(function() {
 
     /* ── Canvas click: confetti + balloons ── */
     $('#canvas').on('click', function() {
-        createConfetti(isMobile ? 12 : 20);
+        createConfetti(isMobile ? 6 : 20);
         createBalloons(6);
     });
 
@@ -125,5 +125,5 @@ $(function() {
     });
 
     /* ── Initial confetti burst on load ── */
-    createConfetti(isMobile ? 10 : 18);
+    createConfetti(isMobile ? 6 : 18);
 });
