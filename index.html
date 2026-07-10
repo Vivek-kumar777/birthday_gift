@@ -134,8 +134,11 @@
         var bgMusic = document.getElementById('bgMusic');
         var musicBtn = document.getElementById('musicBtn');
 
+        var audioStarted = false;
+
         function playMusicOnInteraction() {
-            if (!bgMusic) return;
+            if (!bgMusic || audioStarted) return;
+            audioStarted = true;
             if (bgMusic.paused) {
                 bgMusic.muted = false;
                 bgMusic.volume = 0.75;
@@ -151,6 +154,13 @@
                 }
             }
         }
+
+        document.addEventListener('touchstart', function() {
+            playMusicOnInteraction();
+        }, { once: true, passive: true });
+        document.addEventListener('click', function() {
+            playMusicOnInteraction();
+        }, { once: true, passive: true });
 
         function fireConfetti() {
             var rect = canvas[0].getBoundingClientRect();
@@ -175,6 +185,7 @@
         var lastHoverCheck = 0;
         canvas.on("click touchstart", function(e) {
             e.preventDefault();
+            playMusicOnInteraction();
             var ev = e.type === "touchstart" ? e.originalEvent.touches[0] : e;
             handlePointer(ev.pageX, ev.pageY);
         });
