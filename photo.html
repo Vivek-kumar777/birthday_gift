@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Gift For You 💖</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" crossorigin="anonymous"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f9c5d1 0%, #e197a0 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Dancing Script', cursive;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* floating hearts */
+        #hearts-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .fheart {
+            position: absolute;
+            bottom: -60px;
+            opacity: 0;
+            animation: floatHeart linear forwards;
+        }
+        @keyframes floatHeart {
+            0%   { transform: translateY(0);      opacity: 0; }
+            10%  { opacity: 0.7; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        /* card */
+        .photo-card {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 32px 28px 28px;
+            background: rgba(255,255,255,0.22);
+            border: 1px solid rgba(255,255,255,0.55);
+            border-radius: 32px;
+            box-shadow: 0 24px 60px rgba(180,0,80,0.22);
+            max-width: 520px;
+            width: 92vw;
+            animation: popIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.7); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .photo-title {
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            color: #fff;
+            text-shadow: 0 0 18px rgba(255,100,150,0.7), 1px 1px 3px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .photo-frame {
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            animation: shimmerBorder 3s ease infinite;
+        }
+        @keyframes shimmerBorder {
+            0%,100% { box-shadow: 0 12px 40px rgba(255,100,150,0.3); }
+            50%      { box-shadow: 0 12px 60px rgba(255,100,150,0.7); }
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .photo-caption {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            color: #fff;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3), 0 0 10px rgba(255,180,210,0.8);
+            line-height: 1.6;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 12px 32px;
+            background: rgba(255,255,255,0.25);
+            border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 999px;
+            color: #fff;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hearts-container" aria-hidden="true"></div>
+
+    <div class="photo-card">
+        <div class="photo-title" id="photoTitle">💖 A Memory For You 💖</div>
+        <div class="photo-frame">
+            <img id="photoImg" src="" alt="Your gift photo">
+        </div>
+        <div class="photo-caption" id="photoCaption"></div>
+        <a href="gifts.html" class="back-btn">← Back to Gifts</a>
+    </div>
+
+    <script>
+        // Read gift number from URL: photo.html?gift=1
+        var params  = new URLSearchParams(window.location.search);
+        var giftNum = parseInt(params.get('gift')) || 1;
+
+        var captions = [
+            'Every moment with you is a treasure 💕✨',
+            'You light up every room you walk into 🌸💖',
+            'Forever grateful you are in my life 🎀🌟'
+        ];
+
+        document.getElementById('photoImg').src     = './' + giftNum + '.jpg';
+        document.getElementById('photoCaption').textContent = captions[giftNum - 1] || captions[0];
+
+        // confetti burst on load
+        if (typeof confetti === 'function') {
+            confetti({ particleCount: 120, spread: 90, origin: { x: 0.5, y: 0.4 },
+                colors: ['#ff8fbf','#ffd700','#ffb8c5','#fff','#f2b7ff'] });
+        }
+
+        // floating hearts
+        var HEARTS = ['💖','💕','💗','🌸','✨','💝'];
+        function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+        function spawnHeart() {
+            var el = document.createElement('span');
+            el.className = 'fheart';
+            var dur = rnd(7, 14);
+            el.textContent = HEARTS[rnd(0, HEARTS.length-1)];
+            el.style.cssText = 'left:'+rnd(2,96)+'%;font-size:'+rnd(14,26)+'px;animation-duration:'+dur+'s';
+            document.getElementById('hearts-container').appendChild(el);
+            setTimeout(function(){ el.remove(); }, dur*1000+200);
+        }
+        setInterval(spawnHeart, 1800);
+        for (var i=0; i<4; i++) setTimeout(spawnHeart, i*400);
+    </script>
+</body>
+</html>

@@ -1,27 +1,23 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HBD love</title>
-    <link type="text/css" rel="stylesheet" href="./file/default.css">
-    <script type="text/javascript" src="./file/jquery.min.js"></script>
-    <script type="text/javascript" src="./file/jscex.min.js"></script>
-    <script type="text/javascript" src="./file/jscex-parser.js"></script>
-    <script type="text/javascript" src="./file/jscex-jit.js"></script>
-    <script type="text/javascript" src="./file/jscex-builderbase.min.js"></script>
-    <script type="text/javascript" src="./file/jscex-async.min.js"></script>
-    <script type="text/javascript" src="./file/jscex-async-powerpack.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-    <script type="text/javascript" src="./file/functions.js" charset="utf-8"></script>
-    <script type="text/javascript" src="./file/love.js" charset="utf-8"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./file/default.css">
+    <script src="./file/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" crossorigin="anonymous"></script>
+    <script src="./file/love.js"></script>
 </head>
 <body>
-    <!-- Floating hearts background -->
+
     <div id="hearts-container" aria-hidden="true"></div>
 
     <div id="main">
-        <div id="error"><a href="http://www.google.cn/chrome/intl/zh-CN/landing_chrome.html?hl=zh-CN&brand=CHMI">Chrome</a> (<a href="http://firefox.com.cn/download/">Firefox</a>)</div>
+        <div id="error">Please use <a href="https://www.google.com/chrome/">Chrome</a> or <a href="https://www.mozilla.org/firefox/">Firefox</a></div>
 
         <div id="wrap">
             <section id="hero" class="hero-section">
@@ -31,9 +27,10 @@
                     </div>
                 </div>
             </section>
+
             <main id="mainArea">
                 <aside id="text">
-                    <div id="code" style="display: none;">
+                    <div id="code" style="display:none;">
                         <span class="say">Happy Birthday to you 🎂✨</span>
                         <span class="say">You make every day brighter 🌸</span>
                         <span class="say">Wishing you endless happiness 💕</span>
@@ -45,13 +42,40 @@
                 <div class="canvas-wrapper">
                     <div id="canvasFrame">
                         <canvas id="canvas" width="1100" height="680"></canvas>
-                        <div id="typewriterText"></div>
-                        <button id="openSurpriseBtn" class="open-surprise-btn">Open Surprise</button>
                         <div id="confetti-container" aria-hidden="true"></div>
                         <div id="balloon-container" aria-hidden="true"></div>
+                        <!-- Gift button — shown after tree animation completes -->
+                        <div class="gift-box-wrapper" id="giftBtnWrapper">
+                            <div class="open-gifts-btn-container">
+                                <div class="gift-btn-decorations left-side">
+                                    <span class="decoration decoration-left">✨</span>
+                                    <span class="decoration decoration-left-2">💕</span>
+                                </div>
+                                <a href="./gifts.html" class="open-gifts-btn">
+                                    <span class="btn-shine"></span>
+                                    <span class="btn-text">🎁 Open Gifts</span>
+                                </a>
+                                <div class="gift-btn-decorations right-side">
+                                    <span class="decoration decoration-right">✨</span>
+                                    <span class="decoration decoration-right-2">💕</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <!-- Surprise Modal -->
+    <div id="surpriseModal" aria-hidden="true">
+        <div id="surpriseBox">
+            <h2 id="surpriseTitle">Happy Birthday<br><span>to My Favorite Person</span></h2>
+            <p id="surpriseText">I have a surprise for you! Would you like to see it?</p>
+            <div id="surpriseButtons">
+                <button id="yesBtn" class="surprise-btn yes-btn">Yes, please!</button>
+                <button id="noBtn" class="surprise-btn no-btn">Nope!</button>
+            </div>
         </div>
     </div>
 
@@ -70,229 +94,191 @@
 
     <!-- Music toggle -->
     <button id="musicBtn" title="Toggle music" aria-label="Toggle music">♪</button>
-    <audio id="bgMusic" loop preload="auto" playsinline webkit-playsinline src="./nastelbom-happy-birthday-471481.mp3"></audio>
+    <audio id="bgMusic" loop src="./nastelbom-happy-birthday-471481.mp3"></audio>
+
+    <script src="./file/functions.js"></script>
 
     <script>
-    (function() {
-        var canvas = $('#canvas');
+    (function () {
 
-        if (!canvas[0].getContext) {
-            $("#error").show();
-            return false;
+        var canvasEl = document.getElementById('canvas');
+        if (!canvasEl || !canvasEl.getContext) {
+            document.getElementById('error').style.display = 'block';
+            return;
         }
 
-        var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-        var width = 1100;
+        var $ = window.$;
+        var canvas = $(canvasEl);
+        var width  = 1100;
         var height = 680;
-        var frameDelay = isMobile ? 30 : 10;
-        var flowerBatch = isMobile ? 1 : 5;
-        canvas.attr("width", width);
-        canvas.attr("height", height);
-        canvas.css({ width: "100%", height: "auto", background: "#c9737a" });
-        if (isMobile) {
-            canvas.css({ maxHeight: '65vh' });
-        }
+        canvasEl.width  = width;
+        canvasEl.height = height;
+        canvas.css({ width: '100%', height: 'auto', background: '#c9737a' });
+
+        var isMobile = window.innerWidth <= 768;
 
         var opts = {
-            seed: {
-                x: width / 2 - 20,
-                color: "rgb(190, 26, 37)",
-                scale: 2
-            },
+            seed:   { x: width / 2 - 20, color: 'rgb(190,26,37)', scale: 2 },
             branch: [
-                [535, 680, 570, 250, 500, 200, 30, 100, [
-                    [540, 500, 455, 417, 340, 400, 13, 100, [
-                        [450, 435, 434, 430, 394, 395, 2, 40]
-                    ]],
-                    [550, 445, 600, 356, 680, 345, 12, 100, [
-                        [578, 400, 648, 409, 661, 426, 3, 80]
-                    ]],
-                    [539, 281, 537, 248, 534, 217, 3, 40],
-                    [546, 397, 413, 247, 328, 244, 9, 80, [
-                        [427, 286, 383, 253, 371, 205, 2, 40],
-                        [498, 345, 435, 315, 395, 330, 4, 60]
-                    ]],
-                    [546, 357, 608, 252, 678, 221, 6, 100, [
-                        [590, 293, 646, 277, 648, 271, 2, 80]
-                    ]]
+                [535,680,570,250,500,200,30,100,[
+                    [540,500,455,417,340,400,13,100,[[450,435,434,430,394,395,2,40]]],
+                    [550,445,600,356,680,345,12,100,[[578,400,648,409,661,426,3,80]]],
+                    [539,281,537,248,534,217,3,40],
+                    [546,397,413,247,328,244,9,80,[[427,286,383,253,371,205,2,40],[498,345,435,315,395,330,4,60]]],
+                    [546,357,608,252,678,221,6,100,[[590,293,646,277,648,271,2,80]]]
                 ]]
             ],
-            bloom: { num: isMobile ? 120 : 400, width: width, height: height },
-            footer: { width: width + 100, height: 5, speed: isMobile ? 12 : 10 }
+            bloom:  { num: isMobile ? 150 : 400, width: width, height: height },
+            footer: { width: width + 100, height: 5, speed: 10 }
         };
 
-        var tree = new Tree(canvas[0], width, height, opts);
+        var tree = new Tree(canvasEl, width, height, opts);
         var seed = tree.seed;
         var foot = tree.footer;
-        var hold = 1;
+        var hold = true;
 
         function getCanvasPoint(pageX, pageY) {
-            var rect = canvas[0].getBoundingClientRect();
-            var x = (pageX - (rect.left + window.pageXOffset)) * (canvas[0].width / rect.width);
-            var y = (pageY - (rect.top + window.pageYOffset)) * (canvas[0].height / rect.height);
-            return { x: x, y: y };
+            var rect = canvasEl.getBoundingClientRect();
+            return {
+                x: (pageX - (rect.left + window.pageXOffset)) * (width  / rect.width),
+                y: (pageY - (rect.top  + window.pageYOffset)) * (height / rect.height)
+            };
         }
-
-        var bgMusic = document.getElementById('bgMusic');
-        var musicBtn = document.getElementById('musicBtn');
-        var sideMessageStarted = false;
-
-        var audioStarted = false;
-
-        function playMusicOnInteraction() {
-            if (!bgMusic || audioStarted) return;
-            audioStarted = true;
-            if (bgMusic.paused) {
-                bgMusic.muted = false;
-                bgMusic.volume = 0.75;
-                var playPromise = bgMusic.play();
-                if (playPromise && playPromise.catch) {
-                    playPromise.catch(function(err) {
-                        console.warn('Audio play failed:', err);
-                    });
-                }
-                if (musicBtn) {
-                    musicBtn.classList.add('playing');
-                    musicBtn.textContent = '♫';
-                }
-            }
-        }
-
-        document.addEventListener('touchstart', function() {
-            playMusicOnInteraction();
-        }, { once: true, passive: true });
-        document.addEventListener('click', function() {
-            playMusicOnInteraction();
-        }, { once: true, passive: true });
 
         function fireConfetti() {
-            var rect = canvas[0].getBoundingClientRect();
-            var cx = (rect.left + rect.right) / 2 / window.innerWidth;
-            var cy = (rect.top + rect.bottom) / 2 / window.innerHeight;
-            confetti({ particleCount: isMobile ? 80 : 120, spread: 80, origin: { x: cx, y: cy },
-                colors: ['#ff8fbf','#ffd700','#ffb8c5','#fff','#f2b7ff','#a0d8ff'] });
+            if (typeof confetti !== 'function') return;
+            var rect = canvasEl.getBoundingClientRect();
+            confetti({
+                particleCount: isMobile ? 80 : 120,
+                spread: 80,
+                origin: {
+                    x: (rect.left + rect.right)  / 2 / window.innerWidth,
+                    y: (rect.top  + rect.bottom) / 2 / window.innerHeight
+                },
+                colors: ['#ff8fbf','#ffd700','#ffb8c5','#fff','#f2b7ff','#a0d8ff']
+            });
         }
 
         function handlePointer(pageX, pageY) {
-            var point = getCanvasPoint(pageX, pageY);
-            if (isMobile || seed.hover(point.x, point.y)) {
-                hold = 0;
-                canvas.off("click touchstart mousemove touchmove");
+            var pt = getCanvasPoint(pageX, pageY);
+            if (seed.hover(pt.x, pt.y)) {
+                hold = false;
+                canvas.off('click touchstart mousemove touchmove');
                 canvas.removeClass('hand');
-                playMusicOnInteraction();
                 fireConfetti();
             }
         }
 
-        // Throttle mousemove hover check — getImageData is expensive (GPU→CPU readback)
-        var lastHoverCheck = 0;
-        canvas.on("click touchstart", function(e) {
+        var lastHover = 0;
+        canvas.on('click touchstart', function (e) {
             e.preventDefault();
-            playMusicOnInteraction();
-            var ev = e.type === "touchstart" ? e.originalEvent.touches[0] : e;
+            var ev = e.type === 'touchstart' ? e.originalEvent.touches[0] : e;
             handlePointer(ev.pageX, ev.pageY);
+        }).on('mousemove touchmove', function (e) {
+            e.preventDefault();
+            var now = Date.now();
+            if (now - lastHover < 40) return;
+            lastHover = now;
+            var ev = e.type === 'touchmove' ? e.originalEvent.touches[0] : e;
+            var pt = getCanvasPoint(ev.pageX, ev.pageY);
+            canvas.toggleClass('hand', seed.hover(pt.x, pt.y));
         });
 
-        $('#openSurpriseBtn').on('click', function() {
-            playMusicOnInteraction();
-            startSideMessage();
-            $(this).fadeOut(250);
-        });
+        /* ── Animation chain ── */
 
-        if (!isMobile) {
-            canvas.on("mousemove touchmove", function(e) {
-                e.preventDefault();
-                var now = Date.now();
-                if (now - lastHoverCheck < 40) return;
-                lastHoverCheck = now;
-                var ev = e.type === "touchmove" ? e.originalEvent.touches[0] : e;
-                var point = getCanvasPoint(ev.pageX, ev.pageY);
-                canvas.toggleClass('hand', seed.hover(point.x, point.y));
-            });
-        }
-
-        var seedAnimate = eval(Jscex.compile("async", function () {
+        function phaseSeed() {
             seed.draw();
-            while (hold) { $await(Jscex.Async.sleep(frameDelay)); }
-            while (seed.canScale()) { seed.scale(0.95); $await(Jscex.Async.sleep(frameDelay)); }
-            while (seed.canMove()) { seed.move(0, 2); foot.draw(); $await(Jscex.Async.sleep(frameDelay)); }
-        }));
-
-        var growAnimate = eval(Jscex.compile("async", function () {
-            do { tree.grow(); $await(Jscex.Async.sleep(frameDelay)); } while (tree.canGrow());
-        }));
-
-        var flowAnimate = eval(Jscex.compile("async", function () {
-            do { tree.flower(flowerBatch); $await(Jscex.Async.sleep(isMobile ? 24 : 16)); } while (tree.canFlower());
-        }));
-
-        var moveAnimate = eval(Jscex.compile("async", function () {
-            tree.snapshot("p1", 240, 0, 610, 680);
-            while (tree.move("p1", 500, 0)) { foot.draw(); $await(Jscex.Async.sleep(10)); }
-            foot.draw();
-            tree.snapshot("p2", 500, 0, 610, 680);
-            canvas.parent().css("background", "#c9737a");
-            canvas.css("background", "#c9737a");
-        }));
-
-        function showOpenSurpriseButton() {
-            $('#openSurpriseBtn').fadeIn(500);
+            (function waitClick() {
+                if (!hold) { phaseScale(); return; }
+                setTimeout(waitClick, 16);
+            })();
         }
 
-        var textAnimate = eval(Jscex.compile("async", function () {
-            var lines = $("#code").show().find(".say");
-            var texts = [];
-            var typeSpeed = isMobile ? 70 : 45;
-            var linePause = isMobile ? 260 : 180;
-            lines.each(function() { texts.push($(this).text()); $(this).text(''); });
-            function typeLine(el, text, cb) {
-                var i = 0;
-                var t = setInterval(function() {
-                    el.text(text.slice(0, ++i));
-                    if (i === text.length) { clearInterval(t); cb(); }
-                }, typeSpeed);
-            }
-            function runNext(idx) {
-                if (idx >= lines.length) {
-                    setTimeout(function() { $('#wishModal').addClass('show'); }, 600);
+        function phaseScale() {
+            (function step() {
+                if (!seed.canScale()) { phaseMove1(); return; }
+                seed.scale(0.95);
+                setTimeout(step, 16);
+            })();
+        }
+
+        function phaseMove1() {
+            (function step() {
+                if (!seed.canMove()) { phaseGrow(); return; }
+                seed.move(0, 2);
+                foot.draw();
+                setTimeout(step, 16);
+            })();
+        }
+
+        function phaseGrow() {
+            (function step() {
+                if (!tree.canGrow()) { phaseFlower(); return; }
+                tree.grow();
+                setTimeout(step, 16);
+            })();
+        }
+
+        function phaseFlower() {
+            var batch = isMobile ? 2 : 5;
+            (function step() {
+                if (!tree.canFlower()) { phaseText(); return; }
+                tree.flower(batch);
+                setTimeout(step, 16);
+            })();
+        }
+
+        function phaseText() {
+            startTypewriter();
+            phaseMove2();
+        }
+
+        function phaseMove2() {
+            tree.snapshot('p1', 240, 0, 610, 680);
+            (function step() {
+                if (!tree.move('p1', 500, 0)) {
+                    foot.draw();
+                    tree.snapshot('p2', 500, 0, 610, 680);
+                    canvas.parent().css('background', '#c9737a');
+                    canvas.css('background', '#c9737a');
+                    // Show gift button after animation completes
+                    $('#giftBtnWrapper').addClass('visible');
                     return;
                 }
-                typeLine($(lines[idx]), texts[idx], function() {
-                    setTimeout(function() { runNext(idx + 1); }, linePause);
+                foot.draw();
+                setTimeout(step, 10);
+            })();
+        }
+
+        function startTypewriter() {
+            var lines = $('#code').show().find('.say');
+            var texts = [];
+            lines.each(function () { texts.push($(this).text()); $(this).text(''); });
+
+            function typeLine(el, text, cb) {
+                var i = 0;
+                var t = setInterval(function () {
+                    el.text(text.slice(0, ++i));
+                    if (i === text.length) { clearInterval(t); cb(); }
+                }, 45);
+            }
+
+            function runNext(idx) {
+                if (idx >= lines.length) {
+                    setTimeout(function () { $('#wishModal').addClass('show'); }, 600);
+                    return;
+                }
+                typeLine($(lines[idx]), texts[idx], function () {
+                    setTimeout(function () { runNext(idx + 1); }, 180);
                 });
             }
             runNext(0);
-        }));
-
-        function typeSideMessage(text, target, speed) {
-            var el = $(target);
-            el.text('');
-            var idx = 0;
-            var timer = setInterval(function() {
-                el.text(text.slice(0, ++idx));
-                if (idx >= text.length) {
-                    clearInterval(timer);
-                }
-            }, speed);
         }
 
-        function startSideMessage() {
-            if (sideMessageStarted) return;
-            sideMessageStarted = true;
-            typeSideMessage("You are the person I like sooooo much 💖✨. doesn't matter we fight sometimes, you are still my favorite forever 🌸💕.", "#typewriterText", isMobile ? 90 : 40);
-        }
+        phaseSeed();
 
-        var runAsync = eval(Jscex.compile("async", function () {
-            $await(seedAnimate());
-            $await(growAnimate());
-            $await(flowAnimate());
-            showOpenSurpriseButton();
-            textAnimate().start();
-            $await(moveAnimate());
-        }));
-
-        runAsync().start();
     })();
     </script>
+
 </body>
 </html>

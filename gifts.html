@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gifts For You</title>
+    <link rel="stylesheet" href="./file/default.css">
+    <script src="./file/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="hearts-container" aria-hidden="true"></div>
+
+    <div id="main">
+        <div id="wrap">
+            <!-- Gifts Section -->
+            <section id="giftsSection" class="gifts-section">
+                <h2 class="gifts-title">Gifts For You</h2>
+                <div id="giftsContainer" class="gifts-container">
+                    <div class="gift-card">
+                        <div class="gift-box gift-1" data-gift="1">
+                            <img class="gift-image" src="./1.jpg" alt="Gift 1">
+                            <div class="gift-top">
+                                <div class="gift-bow"></div>
+                            </div>
+                            <div class="gift-body"></div>
+                            <div class="gift-ribbon"></div>
+                        </div>
+                        <button class="gift-open-btn" type="button" data-gift="1">Open Box</button>
+                    </div>
+
+                    <div class="gift-card">
+                        <div class="gift-box gift-2" data-gift="2">
+                            <img class="gift-image" src="./2.jpg" alt="Gift 2">
+                            <div class="gift-top">
+                                <div class="gift-bow"></div>
+                            </div>
+                            <div class="gift-body"></div>
+                            <div class="gift-ribbon"></div>
+                        </div>
+                        <button class="gift-open-btn" type="button" data-gift="2">Open Box</button>
+                    </div>
+
+                    <div class="gift-card">
+                        <div class="gift-box gift-3" data-gift="3">
+                            <img class="gift-image" src="./3.jpg" alt="Gift 3">
+                            <div class="gift-top">
+                                <div class="gift-bow"></div>
+                            </div>
+                            <div class="gift-body"></div>
+                            <div class="gift-ribbon"></div>
+                        </div>
+                        <button class="gift-open-btn" type="button" data-gift="3">Open Box</button>
+                    </div>
+                </div>
+                <a href="index.html" class="back-btn" onclick="window.sessionStorage.setItem('pageScrolled', 'true'); return true;">Back to Birthday 🎂</a>
+            </section>
+        </div>
+    </div>
+
+    <script src="./file/functions.js"></script>
+    <script>
+        $(function() {
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            var $confettiContainer = $('#confetti-container');
+            var $heartsContainer = $('#hearts-container');
+
+            function randomRange(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function createConfetti(count) {
+                if (isMobile) {
+                    count = Math.max(4, Math.min(count, 10));
+                }
+                for (var i = 0; i < count; i++) {
+                    var piece = $('<span class="confetti-piece"></span>');
+                    var size = randomRange(6, 10);
+                    piece.css({
+                        left: randomRange(12, 88) + '%',
+                        top: randomRange(10, 40) + '%',
+                        width: size + 'px',
+                        height: (size + 4) + 'px',
+                        backgroundColor: ['#ffe07d','#ff8fbf','#ffb8c5','#ffe6a4','#c5ffea'][randomRange(0, 4)],
+                        transform: 'rotate(' + randomRange(0, 360) + 'deg)',
+                        opacity: isMobile ? 0.75 : 0.95
+                    });
+                    $('body').append(piece);
+                    (function(el) { setTimeout(function() { el.remove(); }, isMobile ? 1500 : 2200); })(piece);
+                }
+            }
+
+            var HEARTS = ['💖','💕','💗','💓','🌸','✨','💝'];
+            function spawnHeart() {
+                if (isMobile && ($('.fheart').length >= 4 || Math.random() > 0.72)) return;
+                var el = $('<span class="fheart"></span>');
+                var duration = randomRange(isMobile ? 12 : 7, isMobile ? 20 : 14);
+                el.text(HEARTS[randomRange(0, HEARTS.length - 1)]);
+                el.css({
+                    left: randomRange(2, 96) + '%',
+                    fontSize: randomRange(isMobile ? 16 : 14, isMobile ? 22 : 24) + 'px',
+                    animationDuration: duration + 's',
+                    animationDelay: '0s'
+                });
+                $heartsContainer.append(el);
+                setTimeout(function() { el.remove(); }, duration * 1000 + 200);
+            }
+
+            setInterval(spawnHeart, isMobile ? 4200 : 2200);
+            for (var h = 0; h < (isMobile ? 1 : 3); h++) {
+                setTimeout(spawnHeart, h * 1000);
+            }
+
+            /* Open box button handler */
+            $('.gift-open-btn').on('click', function() {
+                var $card    = $(this).closest('.gift-card');
+                var $giftBox = $card.find('.gift-box');
+                var giftNum  = $(this).data('gift');
+
+                if (!$giftBox.hasClass('opened')) {
+                    $giftBox.addClass('opened');
+                    createConfetti(isMobile ? 4 : 12);
+                    // Navigate to photo page after short delay so confetti is visible
+                    setTimeout(function() {
+                        window.location.href = 'photo.html?gift=' + giftNum;
+                    }, 600);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
